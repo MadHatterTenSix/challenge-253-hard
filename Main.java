@@ -78,6 +78,7 @@ public class Main extends JFrame
         /* Create and display the form */
         java.awt.EventQueue.invokeLater(new Runnable()
         {
+            @Override
             public void run()
             {
                 new Main().setVisible(true);
@@ -112,11 +113,9 @@ public class Main extends JFrame
     {
         GraphicsEnvironment g;
         String[] fonts;
-        int len;
 
         g = GraphicsEnvironment.getLocalGraphicsEnvironment();
         fonts = g.getAvailableFontFamilyNames();
-        len = fonts.length;
 
         for (String font : fonts)
             if (font.equalsIgnoreCase(fontName))
