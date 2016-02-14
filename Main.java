@@ -60,10 +60,6 @@ public class Main extends JFrame
                 }
             }
         }
-        catch (Exception e)
-        {
-            /* Do nothing. */
-        }
 //        } catch (ClassNotFoundException ex) {
 //            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
 //        } catch (InstantiationException ex) {
@@ -73,6 +69,10 @@ public class Main extends JFrame
 //        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
 //            java.util.logging.Logger.getLogger(Main.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
 //        }
+        catch (Exception e)
+        {
+            /* Do nothing. */
+        }
         //</editor-fold>
 
         /* Create and display the form */
