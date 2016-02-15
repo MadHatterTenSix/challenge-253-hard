@@ -13,11 +13,33 @@ package terminal;
 
 public class Cursor
 {
+    public static class CursorPosition
+    {
+        public int row;
+        public int col;
+
+        private CursorPosition()
+        {}
+
+        public CursorPosition(int newRow, int newCol)
+        {
+            row = newRow;
+            col = newCol;
+        }
+    }
+
     private static int _row = 0;
     private static int _col = 0;
+    private static CursorPosition _cursorPosition;
 
-    public Cursor()
+    private Cursor()
     {}
+
+    public static CursorPosition getPosition()
+    {
+        _cursorPosition = new CursorPosition(getRow(), getCol());
+        return _cursorPosition;
+    }
 
     public static int getRow()
     {
@@ -31,11 +53,25 @@ public class Cursor
 
     public static void set(int row, int col)
     {
-        if (row < 0) row = 0;
-        else if (row >= Screen.MAX_ROWS) row = Screen.MAX_ROWS - 1;
+        /* Stop cursor from going out of bounds (vertical). */
+        if (row < 0)
+        {
+            row = 0;
+        }
+        else if (row >= Screen.MAX_ROWS)
+        {
+            row = Screen.MAX_ROWS - 1;
+        }
 
-        if (col < 0) col = 0;
-        else if (col >= Screen.MAX_COLS) col = Screen.MAX_COLS - 1;
+        /* Stop cursor from going out of bounds (horizontal). */
+        if (col < 0)
+        {
+            col = 0;
+        }
+        else if (col >= Screen.MAX_COLS)
+        {
+            col = Screen.MAX_COLS - 1;
+        }
 
         _row = row;
         _col = col;
@@ -69,10 +105,5 @@ public class Cursor
     public static void begin()
     {
         set(getRow(), 0);
-    }
-
-    public static void print()
-    {
-        System.out.println("cursor=(" + getRow() + "," + getCol() + ")");
     }
 }
