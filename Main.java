@@ -7,9 +7,6 @@
  * [2016-02-13] Challenge #253 [Hard] Working like a terminal
  * https://www.reddit.com/r/dailyprogrammer/comments/45k70o/20160213_challenge_253_hard_working_like_a/
  *
- * Version 0.1
- * 2016-02-13
- *
  */
 
 package terminal;
@@ -25,12 +22,25 @@ import javax.swing.JTextArea;
 
 public class Main extends JFrame
 {
-    public static final int WIDTH = 300;
+    public static final int WIDTH = 400;
     public static final int HEIGHT = 250;
     public static final int FONT_SIZE = 14;
+    public static final Color FOREGROUND_COLOR = Color.green;
+    public static final Color BACKGROUND_COLOR = Color.black;
+    public static final String[] PROGRAM_FONTS = {
+        "Consolas",
+        "DejaVu Sans Mono",
+        "Courier New",
+        "Courier"
+    };
+    public static final String APP_NAME = "__MadHatter's Terminal";
+    public static final String APP_VER = "0.2";
+    public static final String APP_DATE = "2016/02/15";
+    public static final String APP_TITLE = APP_NAME + " v" + APP_VER;
 
     private JScrollPane scrollPane;
     public static JTextArea textArea;
+//    public static JTextField textField;
 
     public static Terminal terminal;
 
@@ -39,6 +49,41 @@ public class Main extends JFrame
         initComponents();
 
         terminal = new Terminal();
+    }
+
+    public static boolean copyStringArray2D(String[][] src, String[][] dest)
+    {
+        if (src == null || dest == null)
+            return false;
+
+        int row;
+        int col;
+        int rowLen = src[0].length;
+        int colLen = src[1].length;
+
+        for (row = 0; row < rowLen; row++)
+        {
+            for (col = 0; col < colLen; col++)
+            {
+                dest[row][col] = src[row][col];
+            }
+        }
+
+        return true;
+    }
+
+    public static boolean isFontInstalled(String fontName)
+    {
+        GraphicsEnvironment g;
+        String[] fonts;
+
+        g = GraphicsEnvironment.getLocalGraphicsEnvironment();
+        fonts = g.getAvailableFontFamilyNames();
+
+        for (String font : fonts)
+            if (font.equalsIgnoreCase(fontName))
+                return true;
+        return false;
     }
 
     //<editor-fold defaultstate="collapsed" desc=" public static void main(String[] args) ... ">
@@ -87,46 +132,10 @@ public class Main extends JFrame
     }
     //</editor-fold>
 
-    public static boolean copyStringArray2D(String[][] src, String[][] dest)
-    {
-        if (src == null || dest == null)
-            return false;
-
-        int row;
-        int col;
-        int rowLen = src[0].length;
-        int colLen = src[1].length;
-
-        for (row = 0; row < rowLen; row++)
-        {
-            for (col = 0; col < colLen; col++)
-            {
-                dest[row][col] = src[row][col];
-            }
-        }
-
-        return true;
-    }
-
-    //<editor-fold defaultstate="collapsed" desc=" public static boolean isFontInstalled(String fontName) ... ">
-    public static boolean isFontInstalled(String fontName)
-    {
-        GraphicsEnvironment g;
-        String[] fonts;
-
-        g = GraphicsEnvironment.getLocalGraphicsEnvironment();
-        fonts = g.getAvailableFontFamilyNames();
-
-        for (String font : fonts)
-            if (font.equalsIgnoreCase(fontName))
-                return true;
-        return false;
-    }
-    //</editor-fold>
-
     //<editor-fold defaultstate="collapsed" desc=" private void initComponents() ... ">
     private void initComponents()
     {
+        setTitle(APP_TITLE);
 //        setResizable(false);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -134,20 +143,20 @@ public class Main extends JFrame
         scrollPane.setPreferredSize(new Dimension(WIDTH, HEIGHT));
 
         textArea = new JTextArea();
+        textArea.setText(Screen.BLOCK);
         textArea.setEditable(false);
-//        textArea.setPreferredSize(new Dimension(WIDTH, HEIGHT));
-        textArea.setBackground(Color.black);
-        textArea.setForeground(Color.green);
+        textArea.setBackground(BACKGROUND_COLOR);
+        textArea.setForeground(FOREGROUND_COLOR);
         textArea.addKeyListener(new KeyHandler());
 
-        if (isFontInstalled("Consolas"))
-            textArea.setFont(new Font("Consolas", Font.BOLD, FONT_SIZE));
-        else if (isFontInstalled("DejaVu Sans Mono"))
-            textArea.setFont(new Font("DejaVu Sans Mono", Font.BOLD, FONT_SIZE));
-        else if (isFontInstalled("Courier New"))
-            textArea.setFont(new Font("Courier New", Font.BOLD, FONT_SIZE));
-        else if (isFontInstalled("Courier"))
-            textArea.setFont(new Font("Courier", Font.BOLD, FONT_SIZE));
+        for (String font : PROGRAM_FONTS)
+        {
+            if (isFontInstalled(font))
+            {
+                textArea.setFont(new Font(font, Font.BOLD, FONT_SIZE));
+                break;
+            }
+        }
 
         scrollPane.setViewportView(textArea);
 
@@ -155,30 +164,16 @@ public class Main extends JFrame
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(
-                layout.createSequentialGroup()
-//                .addGap(73, 73, 73)
-//                .addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addComponent(scrollPane)
-//                .addContainerGap(89, Short.MAX_VALUE)
-            )
+            .addGroup(layout.createSequentialGroup().addComponent(scrollPane))
+            .addGroup(layout.createSequentialGroup())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(GroupLayout.Alignment.LEADING)
-            .addGroup(
-                layout.createSequentialGroup()
-//                .addGap(75, 75, 75)
-//                .addComponent(scrollPane, GroupLayout.PREFERRED_SIZE, GroupLayout.DEFAULT_SIZE, GroupLayout.PREFERRED_SIZE)
-                .addComponent(scrollPane)
-//                .addContainerGap(127, Short.MAX_VALUE)
-            )
+            .addGroup(layout.createSequentialGroup().addComponent(scrollPane))
         );
 
         pack();
-
         setLocationRelativeTo(null);
-
-        while (textArea == null) {}
     }
     //</editor-fold>
 }
