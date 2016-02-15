@@ -11,13 +11,16 @@
 
 package terminal;
 
+import java.awt.Toolkit;
+import java.awt.datatransfer.DataFlavor;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
 
 public class KeyHandler implements KeyListener
 {
-    private int number1 = -1;
-    private int number2 = -1;
+    /* Variables to track cursor jump. */
+    private int jumpNumber1 = -1; /* row */
+    private int jumpNumber2 = -1; /* column */
 
     public KeyHandler()
     {}
@@ -34,119 +37,108 @@ public class KeyHandler implements KeyListener
         else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_U)
         {
             Cursor.up();
-            Screen.updateCursorPos();
         }
         /* Cursor down */
         else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_D)
         {
             Cursor.down();
-            Screen.updateCursorPos();
         }
         /* Cursor left */
         else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_L)
         {
             Cursor.left();
-            Screen.updateCursorPos();
         }
         /* Cursor right */
         else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_R)
         {
             Cursor.right();
-            Screen.updateCursorPos();
-        }
-        /* Insert circumflex. */
-        else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_6)
-        {
-            Screen.overwrite("^");
-            Cursor.right();
-            Screen.updateCursorPos();
-        }
-        /* Insert '<' */
-        else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_COMMA)
-        {
-            Screen.overwrite("<");
-            Cursor.right();
-            Screen.updateCursorPos();
-        }
-        /* Insert '>' */
-        else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_PERIOD)
-        {
-            Screen.overwrite(">");
-            Cursor.right();
-            Screen.updateCursorPos();
         }
         /* Erase chars to the right including current position. */
         else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_E)
         {
-            Screen.eraseToEnd();
-            Screen.updateCursorPos();
+            Screen.eraseRight();
         }
         /* Cursor home */
         else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_H)
         {
             Cursor.home();
-            Screen.updateCursorPos();
         }
         /* Cursor beginning */
         else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_B)
         {
             Cursor.begin();
-            Screen.updateCursorPos();
         }
-        /* Regular number pressed. */
-        else if (isAltPressed(e) && isNumberPressed(e))
+        /* Insert circumflex. */
+        else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_6)
         {
-            char c = (char)e.getKeyCode();
-            String s = "" + c;
-            Screen.overwrite(s);
-            Cursor.right();
-            Screen.updateCursorPos();
+            Screen.write("^");
+        }
+        /* Insert '<' */
+        else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_COMMA)
+        {
+            Screen.write("<");
+        }
+        /* Insert '>' */
+        else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_PERIOD)
+        {
+            Screen.write(">");
+        }
+        /* Change write mode for inserting. */
+        else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_I)
+        {
+            Terminal.setWriteMode(Terminal.WriteMode.INSERT);
+        }
+        /* Change write mode for overwriting. */
+        else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_O)
+        {
+            Terminal.setWriteMode(Terminal.WriteMode.OVERWRITE);
         }
         /* Cursor jump */
-        else if (isNumberPressed(e))
+        else if (isAltPressed(e) && isNumberPressed(e))
         {
-            if (number1 < 0)
+            if (jumpNumber1 < 0)
             {
-                number1 = e.getKeyCode();
+                jumpNumber1 = e.getKeyCode();
             }
-            else if (number2 < 0)
+            else if (jumpNumber2 < 0)
             {
-                number2 = e.getKeyCode();
+                jumpNumber2 = e.getKeyCode();
 
-                Cursor.set(keyCodeToNumber(number1), keyCodeToNumber(number2));
+                Cursor.set(keyCodeToNumber(jumpNumber1), keyCodeToNumber(jumpNumber2));
 
-                number1 = -1;
-                number2 = -1;
+                jumpNumber1 = -1;
+                jumpNumber2 = -1;
             }
-            Screen.updateCursorPos();
         }
-        /* Something else is pressed. */
+        /* User pastes input. */
+        else if (isCtrlPressed(e) && e.getKeyCode() == KeyEvent.VK_V)
+        {
+            try
+            {
+                String s = (String)Toolkit.getDefaultToolkit().getSystemClipboard().getData(DataFlavor.stringFlavor);
+                Terminal.processPastedInput(s);
+            } catch (Exception ex)
+            {
+                /* Do nothing. */
+            }
+        }
+        /* Something other key is pressed. */
         else if (!isCtrlPressed(e) && !isAltPressed(e))
         {
-            char c = (char)e.getKeyCode();
-            String s = "" + c;
-            Screen.overwrite(s);
-            Cursor.right();
-            Screen.updateCursorPos();
+            Screen.write(keyToString(e));
         }
+
+        Screen.updateDisplay();
     }
 
-    private int keyCodeToNumber(int keyCode)
+    private boolean isCtrlPressed(KeyEvent e)
     {
-        switch (keyCode)
-        {
-            case KeyEvent.VK_0: return 0;
-            case KeyEvent.VK_1: return 1;
-            case KeyEvent.VK_2: return 2;
-            case KeyEvent.VK_3: return 3;
-            case KeyEvent.VK_4: return 4;
-            case KeyEvent.VK_5: return 5;
-            case KeyEvent.VK_6: return 6;
-            case KeyEvent.VK_7: return 7;
-            case KeyEvent.VK_8: return 8;
-            case KeyEvent.VK_9: return 9;
-        }
-        return -1;
+        return ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0);
+    }
+
+    private boolean isAltPressed(KeyEvent e)
+    {
+        return ((e.getModifiers() & KeyEvent.ALT_MASK) != 0);
     }
 
     private boolean isNumberPressed(KeyEvent e)
@@ -168,15 +160,39 @@ public class KeyHandler implements KeyListener
         return false;
     }
 
-    private boolean isCtrlPressed(KeyEvent e)
+    /**
+     * Convert specified KeyEvent into a string from 'KeyEvent.getKeyCode()'.
+     */
+    private String keyToString(KeyEvent e)
     {
-        return ((e.getModifiers() & KeyEvent.CTRL_MASK) != 0);
+        String s = "" + (char)e.getKeyCode();
+        return s;
     }
 
-    private boolean isAltPressed(KeyEvent e)
+    private int keyCodeToNumber(int keyCode)
     {
-        return ((e.getModifiers() & KeyEvent.ALT_MASK) != 0);
+        switch (keyCode)
+        {
+            case KeyEvent.VK_0: return 0;
+            case KeyEvent.VK_1: return 1;
+            case KeyEvent.VK_2: return 2;
+            case KeyEvent.VK_3: return 3;
+            case KeyEvent.VK_4: return 4;
+            case KeyEvent.VK_5: return 5;
+            case KeyEvent.VK_6: return 6;
+            case KeyEvent.VK_7: return 7;
+            case KeyEvent.VK_8: return 8;
+            case KeyEvent.VK_9: return 9;
+        }
+        return -1;
     }
+
+    //<editor-fold defaultstate="collapsed" desc=" Unused abstract methods ... ">
+    //////////////////////////////////////////////////////////////////////
+    /* keyPressed() is most likely the only abstract method to use right now.
+    /* All other methods can be placed here to be hidden. */
+    /* These functions are included because the compiler complains about them not being overidden. */
+    //////////////////////////////////////////////////////////////////////
 
     @Override
     public void keyReleased(KeyEvent e)
@@ -185,4 +201,8 @@ public class KeyHandler implements KeyListener
     @Override
     public void keyTyped(KeyEvent e)
     {}
+
+    //////////////////////////////////////////////////////////////////////
+
+    //</editor-fold>
 }
